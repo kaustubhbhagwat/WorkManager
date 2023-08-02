@@ -21,8 +21,6 @@ class PhotoCompressionWorker(
 
     override suspend fun doWork(): Result {
         return withContext(Dispatchers.IO) {
-
-
             val stringUri = params.inputData.getString(KEY_CONTENT_URI)
             val compressionThresholdInBytes =
                 params.inputData.getLong(KEY_COMPRESSION_THRESHOLD, 0L)
@@ -37,14 +35,15 @@ class PhotoCompressionWorker(
                 val outputStream = ByteArrayOutputStream()
                 outputStream.use { outputStream->
                     bitmap.compress(Bitmap.CompressFormat.JPEG,quality,outputStream)
-                    quality -=(quality * 0.1).roundToInt()
+                    quality -= (quality * 0.1).roundToInt()
                     outputBytes = outputStream.toByteArray()
                 }
-            }while ( outputBytes.size>compressionThresholdInBytes && quality > 5)
-            val file = File(appContext.cacheDir,"${params.id}.jpg" )
+            }while ( outputBytes.size > compressionThresholdInBytes && quality > 5)
+
+            val file = File(appContext.cacheDir,"${params.id}.jpg")
             file.writeBytes(outputBytes)
 
-            Result.success(workDataOf(KEY_RESULT_PATH to file.absoluteFile))
+            Result.success(workDataOf(KEY_RESULT_PATH to file.absolutePath))
         }
     }
 
@@ -52,6 +51,5 @@ class PhotoCompressionWorker(
         const val KEY_CONTENT_URI = "KEY_CONTENT_URI"
         const val KEY_COMPRESSION_THRESHOLD = "KEY_COMPRESSION_THRESHOLD"
         const val KEY_RESULT_PATH = "KEY_RESULT_PATH"
-
     }
 }
